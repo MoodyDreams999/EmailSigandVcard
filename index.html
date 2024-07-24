@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop CSV Upload</title>
+    <style>
+        .drop-zone {
+            max-width: 300px;
+            height: 200px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: "Quicksand", sans-serif;
+            font-weight: 500;
+            font-size: 20px;
+            cursor: pointer;
+            color: #ffffff;
+            border: 4px dashed #009578;
+            border-radius: 10px;
+        }
+
+        .drop-zone--over {
+            border-style: solid;
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload CSV by Drag and Drop</h2>
+    <div class="drop-zone" id="drop-zone">
+        <span class="drop-zone__prompt">Drop file here or click to upload</span>
+        <input type="file" name="csv_file" id="csv_file" class="drop-zone__input" accept=".csv">
+    </div>
+    <button id="uploadBtn">Upload</button>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('csv_file');
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                updateDropZone(fileInput.files[0]);
+            }
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drop-zone--over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drop-zone--over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateDropZone(e.dataTransfer.files[0]);
+            }
+            dropZone.classList.remove('drop-zone--over');
+        });
+
+        function updateDropZone(file) {
+            dropZone.innerHTML = `<span>${file.name}</span>`;
+        }
+
+        uploadBtn.addEventListener('click', () => {
+            if (fileInput.files.length) {
+                const formData = new FormData();
+                formData.append('csv_file', fileInput.files[0]);
+
+                fetch('process_csv.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(result => {
+                    alert(result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('No file selected');
+            }
+        });
+    </script>
+</body>
+</html>
